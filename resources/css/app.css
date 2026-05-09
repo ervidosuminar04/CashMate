@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+@source "../**/*.blade.php";
+@source "../**/*.js";
+
+@theme {
+    /* Fonts */
+    --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* Colors */
+    --color-gravity-dark: #0a0e1a;
+    --color-gravity-surface: #111827;
+    --color-neon-cyan: #00f2ff;
+    --color-neon-rose: #ff007f;
+    --color-neon-purple: #7c3aed;
+    --color-neon-amber: #f59e0b;
+    
+    /* Animation */
+    --animate-float: float 3s ease-in-out infinite;
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+}
+
+@layer base {
+    body {
+        @apply bg-gravity-dark text-slate-100 antialiased;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+}
+
+@layer components {
+    .glass-panel {
+        @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl;
+    }
+    
+    .neon-glow-cyan {
+        text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+    }
+    
+    .neon-border-cyan {
+        box-shadow: 0 0 15px rgba(0, 242, 255, 0.2);
+    }
+}
+
