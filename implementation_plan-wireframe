@@ -1,0 +1,486 @@
+# CashMate Antigravity — UI/UX Master Plan
+
+> **Target:** UMKM Surabaya · **Stack:** Laravel 12 + Tailwind v4 + Vite 7 · **Theme:** Physics-defying financial clarity
+
+---
+
+## 1. Design System Foundation
+
+### Color Palette
+
+| Token | Value | Usage |
+|---|---|---|
+| `--gravity-dark` | `#0a0e1a` | Base background |
+| `--gravity-surface` | `#111827` | Card surfaces |
+| `--gravity-glass` | `rgba(255,255,255,0.06)` | Glassmorphism panels |
+| `--neon-cyan` | `#06d6a0` | Primary accent / success |
+| `--neon-purple` | `#7c3aed` | Secondary accent |
+| `--neon-amber` | `#f59e0b` | Warning / highlights |
+| `--neon-rose` | `#f43f5e` | Expense / danger |
+| `--float-white` | `#f1f5f9` | Text primary |
+| `--float-muted` | `#94a3b8` | Text secondary |
+
+### Typography
+- **Primary:** `Inter` (headings + body)
+- **Mono:** `JetBrains Mono` (financial figures)
+
+### Shape & Motion
+- Border radius: `12px` (cards), `9999px` (pills)
+- Glassmorphism: `backdrop-blur(16px)` + `border: 1px solid rgba(255,255,255,0.08)`
+- Float animation: `translateY` oscillation 8px over 3s ease-in-out
+- Particle system: Canvas-based, 30-60 FPS target
+
+---
+
+## 2. Sitemap & Navigation Architecture
+
+### Navigation Map
+
+```
+CashMate Antigravity
+│
+├── 🏠 Landing Page          /
+├── 🔐 Auth
+│   ├── Login                /login
+│   └── Register             /register
+│
+├── 📊 Dashboard             /dashboard          (requires auth)
+│   ├── Overview Widget
+│   ├── Cash Flow Chart
+│   └── Quick Actions
+│
+├── 📸 Upload Nota           /upload             (requires auth)
+│   ├── Drag & Drop Zone
+│   ├── Camera Capture
+│   └── AI Processing View
+│
+├── ✅ Review Transaksi      /transactions/review (requires auth)
+│   ├── Extracted Data Table
+│   ├── Category Editor
+│   └── Approve/Reject
+│
+├── 📒 Riwayat Transaksi     /transactions       (requires auth)
+│   ├── Filter & Search
+│   └── Transaction List
+│
+├── 📈 Laporan Keuangan      /reports            (requires auth)
+│   ├── Arus Kas
+│   ├── Laba/Rugi
+│   └── Export PDF/Excel
+│
+└── ⚙️ Pengaturan            /settings           (requires auth)
+    ├── Profil Usaha
+    ├── Kategori Custom
+    └── Preferensi
+```
+
+### Primary Navigation (Sidebar — Desktop / Bottom Bar — Mobile)
+
+| # | Icon | Label | Route | Badge |
+|---|---|---|---|---|
+| 1 | 📊 | Dashboard | `/dashboard` | — |
+| 2 | 📸 | Upload | `/upload` | — |
+| 3 | 📒 | Transaksi | `/transactions` | pending count |
+| 4 | 📈 | Laporan | `/reports` | — |
+| 5 | ⚙️ | Pengaturan | `/settings` | — |
+
+---
+
+## 3. User Flow Diagrams
+
+### A. Main Application Flow
+
+```mermaid
+flowchart TD
+    A["🌐 Landing Page"] --> B{"Sudah Login?"}
+    B -->|Ya| D["📊 Dashboard"]
+    B -->|Belum| C["🔐 Login / Register"]
+    C --> D
+
+    D --> E["📸 Upload Nota"]
+    D --> F["📒 Riwayat Transaksi"]
+    D --> G["📈 Laporan Keuangan"]
+    D --> H["⚙️ Pengaturan"]
+
+    E --> I["🤖 AI OCR Processing"]
+    I --> J["✅ Review & Kategorisasi"]
+    J --> K{"Data Benar?"}
+    K -->|Ya| L["💾 Simpan ke Database"]
+    K -->|Tidak| M["✏️ Edit Manual"]
+    M --> J
+
+    L --> D
+    F --> N["🔍 Filter & Cari"]
+    G --> O["📥 Export PDF / Excel"]
+```
+
+### B. Upload & OCR Flow (Detail)
+
+```mermaid
+flowchart LR
+    A["📸 Pilih Foto / Drag-Drop"] --> B["🌀 Gravity Pull Animation"]
+    B --> C["🤖 Google AI Studio OCR"]
+    C --> D["✨ Data Terbang ke Tabel"]
+    D --> E["📝 Review Kategori"]
+    E --> F["✅ Konfirmasi"]
+    F --> G["💾 Tersimpan"]
+```
+
+### C. Navigation State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> Landing
+    Landing --> Auth: Click CTA
+    Auth --> Dashboard: Login Success
+    Dashboard --> Upload: Nav Click
+    Dashboard --> Transactions: Nav Click
+    Dashboard --> Reports: Nav Click
+    Dashboard --> Settings: Nav Click
+    Upload --> Review: OCR Complete
+    Review --> Dashboard: Save
+    Review --> Upload: Scan Lagi
+    Transactions --> Reports: Lihat Laporan
+    Reports --> Export: Download
+    Export --> Reports: Done
+```
+
+---
+
+## 4. ASCII Wireframes
+
+### 4.1 Landing Page (`/`)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  ☰ CashMate                          [Masuk]  [Daftar]     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│          ✦  ·  ✧      (floating particles)      ·  ✦      │
+│                                                             │
+│              ╔══════════════════════════════╗                │
+│              ║   Kelola Keuangan UMKM-mu   ║                │
+│              ║   Tanpa Batas Gravitasi 🚀   ║                │
+│              ╚══════════════════════════════╝                │
+│                                                             │
+│          ┌──────────────┐  ┌──────────────┐                 │
+│          │ 📸 Mulai     │  │ ▶️  Lihat    │                 │
+│          │   Sekarang   │  │    Demo      │                 │
+│          └──────────────┘  └──────────────┘                 │
+│                                                             │
+│     💰          📄          📊          (floating icons)    │
+│                                                             │
+├─────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐           │
+│  │ ✨ Smart OCR │ │ 🧠 Auto     │ │ 📈 Dashboard│           │
+│  │             │ │ Kategori    │ │  Real-time  │           │
+│  │  Scan nota  │ │             │ │             │           │
+│  │  langsung   │ │  AI pahami  │ │  Grafik 3D  │           │
+│  │  pakai AI   │ │  konteks    │ │  interaktif │           │
+│  └─────────────┘ └─────────────┘ └─────────────┘           │
+├─────────────────────────────────────────────────────────────┤
+│  Footer · © 2026 CashMate · Tim Antigravity                │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 4.2 Dashboard (`/dashboard`)
+
+```
+┌──────────┬──────────────────────────────────────────────────┐
+│          │  Dashboard          🔔  👤 Toko Pak Budi         │
+│ 📊 Dash  ├──────────────────────────────────────────────────┤
+│          │                                                  │
+│ 📸 Upload│  ┌────────────┐ ┌────────────┐ ┌────────────┐   │
+│          │  │ 💰 Pemasukan│ │ 💸 Pengeluar│ │ 📊 Saldo   │   │
+│ 📒 Trans │  │            │ │            │ │            │   │
+│          │  │ Rp 45.2 Jt │ │ Rp 32.1 Jt │ │ Rp 13.1 Jt │   │
+│ 📈 Report│  │   ↑ 12%    │ │   ↓ 5%     │ │   ↑ 23%    │   │
+│          │  └────────────┘ └────────────┘ └────────────┘   │
+│ ⚙️ Setting│                                                 │
+│          │  ┌──────────────────────────────────────────┐    │
+│          │  │     Arus Kas (3D Interactive Chart)      │    │
+│          │  │                                          │    │
+│          │  │  ██                    ▓▓                │    │
+│          │  │  ██  ▓▓        ██     ▓▓  ██            │    │
+│          │  │  ██  ▓▓  ██   ██  ▓▓ ▓▓  ██  ▓▓       │    │
+│          │  │  ──────────────────────────────────      │    │
+│          │  │  Jan Feb Mar  Apr May Jun  Jul Aug       │    │
+│          │  └──────────────────────────────────────────┘    │
+│          │                                                  │
+│          │  ┌──────────────────┐ ┌──────────────────┐      │
+│          │  │ 🕐 Transaksi     │ │ 🎯 Quick Action  │      │
+│          │  │    Terbaru       │ │                  │      │
+│          │  │                  │ │ [📸 Scan Nota]   │      │
+│          │  │ • Beli tepung    │ │ [📥 Download]    │      │
+│          │  │ • Bayar listrik  │ │ [➕ Tambah]      │      │
+│          │  │ • Terima pesanan │ │                  │      │
+│          │  └──────────────────┘ └──────────────────┘      │
+└──────────┴──────────────────────────────────────────────────┘
+```
+
+### 4.3 Upload Nota (`/upload`)
+
+```
+┌──────────┬──────────────────────────────────────────────────┐
+│          │  Upload Nota                      👤 Pak Budi    │
+│ SIDEBAR  ├──────────────────────────────────────────────────┤
+│          │                                                  │
+│          │  ┌──────────────────────────────────────────┐    │
+│          │  │                                          │    │
+│          │  │      ╔══════════════════════════╗        │    │
+│          │  │      ║                          ║        │    │
+│          │  │      ║    🌀 GRAVITY-FREE ZONE  ║        │    │
+│          │  │      ║                          ║        │    │
+│          │  │      ║   Seret & Lepas Nota     ║        │    │
+│          │  │      ║   ke sini                ║        │    │
+│          │  │      ║                          ║        │    │
+│          │  │      ║   ── atau ──             ║        │    │
+│          │  │      ║                          ║        │    │
+│          │  │      ║   [📷 Ambil Foto]        ║        │    │
+│          │  │      ║   [📁 Pilih File]        ║        │    │
+│          │  │      ║                          ║        │    │
+│          │  │      ╚══════════════════════════╝        │    │
+│          │  │                                          │    │
+│          │  └──────────────────────────────────────────┘    │
+│          │                                                  │
+│          │  ┌──────────────────────────────────────────┐    │
+│          │  │  📋 Riwayat Upload Terakhir              │    │
+│          │  │  • nota_toko_01.jpg  ✅ Selesai          │    │
+│          │  │  • struk_beli_02.png ✅ Selesai          │    │
+│          │  └──────────────────────────────────────────┘    │
+└──────────┴──────────────────────────────────────────────────┘
+```
+
+### 4.4 AI Processing View (Overlay on Upload)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                                                             │
+│    ┌─────────────────┐       ┌──────────────────────┐      │
+│    │                 │  ✨➡️  │  Data Terekstraksi   │      │
+│    │   [Foto Nota]   │  ✨➡️  │                      │      │
+│    │                 │  ✨➡️  │  Tgl: 07-05-2026     │      │
+│    │   ░░░░░░░░░░░   │  ✨➡️  │  Toko: UD Makmur    │      │
+│    │   ░░ SCAN ░░░   │  ✨➡️  │                      │      │
+│    │   ░░░░░░░░░░░   │       │  ┌──────┬──────────┐ │      │
+│    │                 │  ✨➡️  │  │ Item │ Harga    │ │      │
+│    │   ▓▓▓▓▓▓▓▓▓▓▓   │  ✨➡️  │  ├──────┼──────────┤ │      │
+│    │                 │  ✨➡️  │  │Tepung│ Rp25.000 │ │      │
+│    │                 │       │  │Gula  │ Rp18.000 │ │      │
+│    └─────────────────┘       │  │Minyak│ Rp32.000 │ │      │
+│                              │  └──────┴──────────┘ │      │
+│    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿ 78%              │                      │      │
+│    Processing...             │  Total: Rp 75.000    │      │
+│                              └──────────────────────┘      │
+│                                                             │
+│              [✅ Lanjut Review]   [🔄 Scan Ulang]           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 4.5 Review Transaksi (`/transactions/review`)
+
+```
+┌──────────┬──────────────────────────────────────────────────┐
+│          │  Review Transaksi                 👤 Pak Budi    │
+│ SIDEBAR  ├──────────────────────────────────────────────────┤
+│          │                                                  │
+│          │  ┌──── Nota: nota_toko_01.jpg ────────────┐     │
+│          │  │ Tanggal: 07 Mei 2026    Toko: UD Makmur│     │
+│          │  └────────────────────────────────────────┘     │
+│          │                                                  │
+│          │  ┌────────┬──────────┬──────────┬─────────┐     │
+│          │  │  Item  │  Harga   │ Kategori │  Aksi   │     │
+│          │  ├────────┼──────────┼──────────┼─────────┤     │
+│          │  │ Tepung │ Rp25.000 │🟢Bhn Baku│  ✏️ 🗑️  │     │
+│          │  │ Gula   │ Rp18.000 │🟢Bhn Baku│  ✏️ 🗑️  │     │
+│          │  │ Minyak │ Rp32.000 │🟡Operasi │  ✏️ 🗑️  │     │
+│          │  └────────┴──────────┴──────────┴─────────┘     │
+│          │                                                  │
+│          │  ┌─ Kategori Visual (Physics Balls) ──────┐     │
+│          │  │                                        │     │
+│          │  │   ┌──────────┐      ┌──────────┐      │     │
+│          │  │   │ 🟢       │      │ 🟡       │      │     │
+│          │  │   │ (●)(●)   │      │   (●)    │      │     │
+│          │  │   │ Bhn Baku │      │ Operasi  │      │     │
+│          │  │   │ Rp43.000 │      │ Rp32.000 │      │     │
+│          │  │   └──────────┘      └──────────┘      │     │
+│          │  └────────────────────────────────────────┘     │
+│          │                                                  │
+│          │  Total: Rp 75.000  [💾 Simpan]  [❌ Batal]      │
+└──────────┴──────────────────────────────────────────────────┘
+```
+
+### 4.6 Laporan Keuangan (`/reports`)
+
+```
+┌──────────┬──────────────────────────────────────────────────┐
+│          │  Laporan Keuangan                 👤 Pak Budi    │
+│ SIDEBAR  ├──────────────────────────────────────────────────┤
+│          │  [Arus Kas] [Laba/Rugi] [Kategori]     📅 Filter│
+│          │                                                  │
+│          │  ┌──────────────────────────────────────────┐    │
+│          │  │      Arus Kas — Mei 2026 (3D Chart)     │    │
+│          │  │                                          │    │
+│          │  │   50jt ┤  ╭─╮                            │    │
+│          │  │   40jt ┤  │ │  ╭─╮                       │    │
+│          │  │   30jt ┤──╯ ╰──╯ ╰──╭─╮                 │    │
+│          │  │   20jt ┤             │ │                  │    │
+│          │  │   10jt ┤             ╰─╯                  │    │
+│          │  │      0 ┼────────────────────              │    │
+│          │  │        W1   W2   W3   W4                  │    │
+│          │  └──────────────────────────────────────────┘    │
+│          │                                                  │
+│          │  ┌──────────────────┐ ┌──────────────────┐      │
+│          │  │ 🟢 Pemasukan     │ │ 🔴 Pengeluaran   │      │
+│          │  │ Rp 45.200.000   │ │ Rp 32.100.000   │      │
+│          │  │ +12% vs Apr     │ │ -5% vs Apr      │      │
+│          │  └──────────────────┘ └──────────────────┘      │
+│          │                                                  │
+│          │  ┌──────────────────────────────────────────┐    │
+│          │  │  [📥 Download PDF]  [📊 Download Excel]  │    │
+│          │  └──────────────────────────────────────────┘    │
+│          │     (Floating report animation on download)      │
+└──────────┴──────────────────────────────────────────────────┘
+```
+
+---
+
+## 5. Component Architecture
+
+```mermaid
+graph TD
+    subgraph Layouts
+        A["AppLayout (Sidebar + TopBar)"]
+        B["GuestLayout (Landing/Auth)"]
+    end
+
+    subgraph SharedComponents
+        C["GlassCard"]
+        D["FloatingIcon"]
+        E["ParticleCanvas"]
+        F["NavSidebar"]
+        G["BottomNavBar (Mobile)"]
+        H["StatWidget"]
+    end
+
+    subgraph Pages
+        I["LandingPage"]
+        J["DashboardPage"]
+        K["UploadPage"]
+        L["ReviewPage"]
+        M["TransactionsPage"]
+        N["ReportsPage"]
+        O["SettingsPage"]
+    end
+
+    subgraph FeatureComponents
+        P["DragDropZone"]
+        Q["OcrProcessingOverlay"]
+        R["CategoryBalls"]
+        S["CashFlowChart3D"]
+        T["TransactionTable"]
+        U["ReportExporter"]
+    end
+
+    B --> I
+    A --> J & K & L & M & N & O
+    J --> H & S
+    K --> P & Q & E
+    L --> T & R
+    N --> S & U
+```
+
+---
+
+## 6. Animation Specification
+
+| Animation | Trigger | CSS/JS | Duration |
+|---|---|---|---|
+| **Float Idle** | Page load | CSS `@keyframes float` | 3s infinite |
+| **Particle Field** | Background always-on | Canvas API | 60fps |
+| **Gravity Pull** | File drop on zone | JS `requestAnimationFrame` | 800ms |
+| **Data Fly-Out** | OCR extraction complete | CSS `transform` + JS stagger | 1.2s |
+| **Ball Physics** | Category assignment | Canvas / CSS spring | 600ms |
+| **Chart Bounce** | Touch/hover on chart bar | CSS `scale` + `transition` | 300ms |
+| **Report Slide** | Download triggered | CSS `translateY` + `opacity` | 1s |
+| **Glass Shimmer** | Card hover | CSS `background-position` | 400ms |
+
+---
+
+## 7. Responsive Breakpoints
+
+| Breakpoint | Layout | Nav |
+|---|---|---|
+| `< 640px` (Mobile) | Single column, stacked cards | Bottom tab bar |
+| `640–1024px` (Tablet) | 2-column grid | Collapsible sidebar |
+| `> 1024px` (Desktop) | Full sidebar + content area | Fixed sidebar |
+
+---
+
+## 8. Phased Implementation Roadmap
+
+### Phase 1 — Foundation (Week 1)
+- [ ] Design system CSS tokens in `app.css`
+- [ ] `AppLayout` (sidebar + topbar) Blade component
+- [ ] `GuestLayout` (clean dark) Blade component
+- [ ] `GlassCard` Blade component
+- [ ] `ParticleCanvas` JS module
+- [ ] Float animation keyframes
+- [ ] Google Fonts (Inter + JetBrains Mono) integration
+
+### Phase 2 — Landing & Auth (Week 2)
+- [ ] Landing page with floating elements + particle background
+- [ ] Login page (glassmorphism form)
+- [ ] Register page
+- [ ] Auth controllers & routes
+
+### Phase 3 — Dashboard (Week 3)
+- [ ] Dashboard route + controller
+- [ ] `StatWidget` component (pemasukan/pengeluaran/saldo)
+- [ ] `CashFlowChart3D` (Chart.js or similar with depth effects)
+- [ ] Recent transactions list
+- [ ] Quick actions panel
+
+### Phase 4 — Upload & OCR (Week 4)
+- [ ] `DragDropZone` component with gravity-pull animation
+- [ ] Google AI Studio API integration (backend service)
+- [ ] `OcrProcessingOverlay` with scan animation
+- [ ] Data fly-out animation to table
+
+### Phase 5 — Review & Transactions (Week 5)
+- [ ] `ReviewPage` with editable extracted data
+- [ ] `CategoryBalls` physics visualization
+- [ ] `TransactionTable` with filters
+- [ ] CRUD operations for transactions
+
+### Phase 6 — Reports & Polish (Week 6)
+- [ ] Report generation (PDF via DomPDF, Excel via Maatwebsite)
+- [ ] `ReportExporter` with floating download animation
+- [ ] Performance optimization (lazy loading, code splitting)
+- [ ] Mobile responsive pass
+- [ ] End-to-end testing
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> 1. **Google AI Studio API Key:** Apakah sudah ada API key untuk OCR multimodal, atau perlu setup baru?
+> 2. **Chart Library:** Preferensi Chart.js vs ApexCharts vs D3.js untuk grafik 3D interaktif?
+> 3. **Auth Method:** Gunakan Laravel Breeze/Fortify, atau custom auth?
+> 4. **Mobile Target:** Apakah perlu PWA support untuk akses offline?
+> 5. **Bahasa:** UI sepenuhnya Bahasa Indonesia, atau bilingual?
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- `php artisan test --compact` for all feature tests
+- Pest browser tests for critical user flows (upload → OCR → review → save)
+
+### Manual Verification
+- Visual QA on Chrome, Firefox, Safari
+- Mobile responsive testing (320px – 1440px)
+- Animation performance profiling (target 60fps)
+- Lighthouse audit (Performance > 90, Accessibility > 95)
