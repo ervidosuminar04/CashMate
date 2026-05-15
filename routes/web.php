@@ -3,7 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('landing_page', function () {
+Route::get('/', function () {
     return view('landing_page');
 })->name('landing_page');
 
@@ -22,6 +22,10 @@ Route::get('login', function () {
 Route::get('register', function () {
     return view('auth.register');
 })->name('register');
+
+Route::get('laporan', function () {
+    return view('laporan');
+})->name('laporan');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
