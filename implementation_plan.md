@@ -1,290 +1,410 @@
-# CashMate Antigravity — 1-Week Sprint Plan
+# CashMate — Evaluasi & Implementation Plan Lengkap
 
-> **Sprint:** 9–15 Mei 2026 · **Stack:** Laravel 12 + Tailwind v4 + Vite 7 · **Status:** Project masih boilerplate default
-
----
-
-## Current State
-
-Project masih 100% boilerplate Laravel 12:
-- Hanya `welcome.blade.php` (default)
-- Belum ada controller, model, migration, atau view custom
-- Tailwind v4 sudah terinstall & configured
-- Database SQLite siap pakai
+> **Tanggal:** 15 Mei 2026 · **Stack:** Laravel 12 + Tailwind v3 (CDN) + Breeze v2 · **DB:** MySQL (`cashmate`)
 
 ---
 
-## Scope Decision Matrix
+## 🔍 Evaluasi Current State
 
-Setiap fitur dari plan 6-minggu dikategorikan:
+### Apa yang Sudah Ada
 
-| Status | Arti |
+| Komponen | Status | Detail |
+|---|---|---|
+| Laravel 12 + Breeze | ✅ Terinstall | Auth scaffolding ada di `resources/views/auth/` |
+| Landing Page | ✅ View ada | Statis, desain bagus (glassmorphism + Material Design 3) |
+| Tentang Kami | ✅ View ada | Lengkap (hero, metrics, story, values, team, partners) |
+| Dashboard | ⚠️ Copy landing | Isi **identik** dengan `landing_page.blade.php` — belum ada dashboard sebenarnya |
+| Upload | ⚠️ Copy landing | Isi **identik** dengan `landing_page.blade.php` — belum ada upload form |
+| Login (root) | ⚠️ Copy landing | `login.blade.php` (root) = copy landing, bukan form login |
+| Transaksi | ✅ View ada | UI mockup statis — sidebar + bubble chart + summary cards |
+| Laporan | ✅ View ada | UI mockup statis — sidebar + report cards + chart placeholder |
+| Auth (Breeze) | ✅ Fungsional | `auth/login.blade.php` & `auth/register.blade.php` dari Breeze |
+| Controllers | ⚠️ Ada tapi kosong | 6 controller dibuat tapi **tidak terhubung ke routes** |
+| Database | ❌ Kosong | Hanya migration `users`, `cache`, `jobs` (default Laravel) |
+| Models | ❌ Hanya User | Tidak ada model bisnis (transaction, category, dll) |
+
+### 12 Masalah Kritis yang Ditemukan
+
+> [!CAUTION]
+> Masalah-masalah ini **harus diselesaikan** sebelum website dapat digunakan.
+
+| # | Masalah | Severity | Detail |
+|---|---|---|---|
+| 1 | **Views statis tanpa data** | 🔴 Critical | Semua halaman (dashboard, transaksi, laporan) berisi data hardcoded, bukan dari database |
+| 2 | **Dashboard/Upload/Login = copy Landing** | 🔴 Critical | 3 file view identik dengan `landing_page.blade.php` — belum ada konten asli |
+| 3 | **Tidak ada database schema bisnis** | 🔴 Critical | Belum ada tabel `transactions`, `categories`, `receipts`, `businesses` |
+| 4 | **Routes duplikat** | 🟡 Major | Route `login` dan `register` didefinisikan 2x di `web.php` (line 18-24 dan 30-36) |
+| 5 | **Controllers tidak terpakai** | 🟡 Major | 6 controller dibuat tapi routes menggunakan closure, bukan controller |
+| 6 | **Navigasi tidak terhubung** | 🟡 Major | Semua link navbar menggunakan `href="#"` — tidak mengarah ke halaman manapun |
+| 7 | **CDN Tailwind bukan Vite** | 🟡 Major | Views menggunakan `cdn.tailwindcss.com` bukan Vite pipeline yang sudah terkonfigurasi |
+| 8 | **Tailwind config duplikasi** | 🟡 Major | Setiap view memiliki `<script>tailwind.config</script>` sendiri (~170 baris per file) |
+| 9 | **Tidak ada layout system** | 🟡 Major | Breeze layout (`layouts/app.blade.php`) tidak digunakan oleh halaman custom |
+| 10 | **Controller naming convention** | 🟠 Minor | Controller menggunakan lowercase (`tentangkami.php`, `dashboard.php`) bukan PascalCase |
+| 11 | **Tidak ada middleware protection** | 🟠 Minor | Halaman dashboard/transaksi/laporan bisa diakses tanpa login |
+| 12 | **Tidak ada CSRF/form handling** | 🟠 Minor | Semua button/form hanya UI, tidak ada POST action |
+
+---
+
+## 🗺️ App Flow (User Journey)
+
+```mermaid
+graph TD
+    A["🌐 Landing Page<br/>(Guest)"] --> B{"Sudah Login?"}
+    B -->|Belum| C["🔐 Login / Register"]
+    B -->|Sudah| D["📊 Dashboard"]
+    C --> D
+    
+    D --> E["📤 Upload Nota"]
+    D --> F["📋 Daftar Transaksi"]
+    D --> G["📈 Laporan"]
+    D --> H["⚙️ Pengaturan"]
+    
+    E --> I["🤖 AI OCR Processing"]
+    I --> J["✏️ Review & Edit Data"]
+    J --> K["💾 Simpan ke Database"]
+    K --> F
+    
+    F --> L["🔍 Filter & Search"]
+    F --> M["✏️ Edit Transaksi"]
+    F --> N["➕ Tambah Manual"]
+    
+    G --> O["💰 Arus Kas"]
+    G --> P["📊 Laba Rugi"]
+    G --> Q["🗂️ Rekap Kategori"]
+    G --> R["📥 Export PDF"]
+    
+    H --> S["👤 Profil Usaha"]
+    H --> T["🏷️ Kategori Custom"]
+
+    style A fill:#f8f9ff,stroke:#006e2f,color:#0b1c30
+    style D fill:#22c55e,stroke:#006e2f,color:#fff
+    style E fill:#4059aa,stroke:#264191,color:#fff
+    style I fill:#3b665f,stroke:#224e47,color:#fff
+```
+
+---
+
+## 🗄️ Database Schema
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    users ||--o{ businesses : "owns"
+    businesses ||--o{ transactions : "has"
+    businesses ||--o{ categories : "has"
+    businesses ||--o{ receipts : "has"
+    receipts ||--o{ receipt_items : "contains"
+    categories ||--o{ transactions : "categorizes"
+    receipts ||--o{ transactions : "sources"
+
+    users {
+        bigint id PK
+        string name
+        string email UK
+        timestamp email_verified_at
+        string password
+        timestamps timestamps
+    }
+
+    businesses {
+        bigint id PK
+        bigint user_id FK
+        string name
+        string address
+        string phone
+        string type "warung|toko|jasa|lainnya"
+        timestamps timestamps
+    }
+
+    categories {
+        bigint id PK
+        bigint business_id FK
+        string name
+        string type "income|expense"
+        string icon
+        string color
+        boolean is_default
+        timestamps timestamps
+    }
+
+    transactions {
+        bigint id PK
+        bigint business_id FK
+        bigint category_id FK
+        bigint receipt_id FK "nullable"
+        string type "income|expense"
+        decimal amount "12,2"
+        string description
+        date transaction_date
+        string source "manual|ocr"
+        timestamps timestamps
+    }
+
+    receipts {
+        bigint id PK
+        bigint business_id FK
+        string image_path
+        text raw_ocr_text "nullable"
+        json extracted_data "nullable"
+        string status "pending|processed|reviewed|failed"
+        timestamps timestamps
+    }
+
+    receipt_items {
+        bigint id PK
+        bigint receipt_id FK
+        string item_name
+        integer quantity
+        decimal unit_price "12,2"
+        decimal total_price "12,2"
+        timestamps timestamps
+    }
+```
+
+### Migration Files yang Perlu Dibuat
+
+| Migration | Tabel | Keterangan |
+|---|---|---|
+| `create_businesses_table` | `businesses` | Profil usaha per user |
+| `create_categories_table` | `categories` | Kategori transaksi (default + custom) |
+| `create_receipts_table` | `receipts` | Foto nota yang diupload |
+| `create_receipt_items_table` | `receipt_items` | Item per nota (hasil OCR) |
+| `create_transactions_table` | `transactions` | Transaksi keuangan utama |
+
+---
+
+## 🏗️ Backend Architecture
+
+### Models & Relationships
+
+| Model | Relationships | Factory/Seeder |
+|---|---|---|
+| `User` | `hasMany(Business)` | ✅ Ada (Breeze) |
+| `Business` | `belongsTo(User)`, `hasMany(Transaction, Category, Receipt)` | 🔨 Buat baru |
+| `Category` | `belongsTo(Business)`, `hasMany(Transaction)` | 🔨 Buat baru + seeder defaults |
+| `Transaction` | `belongsTo(Business, Category, Receipt)` | 🔨 Buat baru |
+| `Receipt` | `belongsTo(Business)`, `hasMany(ReceiptItem)`, `hasMany(Transaction)` | 🔨 Buat baru |
+| `ReceiptItem` | `belongsTo(Receipt)` | 🔨 Buat baru |
+
+### Controllers
+
+| Controller | Route Group | Methods | Auth |
+|---|---|---|---|
+| `LandingPageController` | `/` | `index` | Guest |
+| `TentangKamiController` | `/tentang-kami` | `index` | Guest |
+| `DashboardController` | `/dashboard` | `index` | ✅ Auth |
+| `UploadController` | `/upload` | `index`, `store`, `process` | ✅ Auth |
+| `TransactionController` | `/transaksi` | `index`, `create`, `store`, `edit`, `update`, `destroy` | ✅ Auth |
+| `ReportController` | `/laporan` | `index`, `arusKas`, `labaRugi`, `rekapKategori`, `exportPdf` | ✅ Auth |
+| `ReviewController` | `/review` | `show`, `approve` | ✅ Auth |
+| `SettingController` | `/pengaturan` | `index`, `updateProfil`, `kategori` | ✅ Auth |
+
+### Services
+
+| Service | Responsibility |
 |---|---|
-| ✅ **KEEP** | Wajib ada, dikerjakan penuh |
-| 🟡 **SIMPLIFY** | Tetap ada tapi scope dikurangi |
-| ❌ **CUT** | Ditunda ke v2, tidak masuk sprint ini |
+| `OcrService` | Integrasi Google AI Studio API — kirim gambar, terima JSON data transaksi |
+| `ReportService` | Hitung arus kas, laba rugi, rekap kategori per periode |
+| `DashboardService` | Hitung summary cards, chart data, recent transactions |
+
+### Form Requests (Validation)
+
+| Request | Fields |
+|---|---|
+| `StoreTransactionRequest` | `type`, `amount`, `category_id`, `description`, `transaction_date` |
+| `UpdateTransactionRequest` | Same as Store |
+| `UploadReceiptRequest` | `image` (mimes:jpg,png,jpeg, max:5MB) |
+| `UpdateBusinessRequest` | `name`, `address`, `phone`, `type` |
+| `ApproveReceiptRequest` | `items[]` (array of extracted items to save) |
 
 ---
 
-### Design System & Components
+## 🎨 Frontend Architecture
 
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| CSS Design Tokens (warna, font, spacing) | ✅ KEEP | Fondasi semua UI, harus dikerjakan pertama |
-| Google Fonts (Inter + JetBrains Mono) | ✅ KEEP | Mudah, dampak besar pada tampilan |
-| GlassCard component | ✅ KEEP | Reusable di semua halaman |
-| AppLayout (sidebar + topbar) | ✅ KEEP | Layout utama aplikasi |
-| GuestLayout (landing/auth) | ✅ KEEP | Layout untuk halaman publik |
-| Float animation keyframes | 🟡 SIMPLIFY | Hanya 1 animasi `float` sederhana, bukan set lengkap |
-| ParticleCanvas (Canvas API 60fps) | ❌ **CUT** | Berat, butuh tuning performa, bisa ditambah nanti |
-| Glass Shimmer hover effect | ❌ **CUT** | Polish, bukan core functionality |
-| BottomNavBar (Mobile) | 🟡 SIMPLIFY | Responsive sidebar collapse saja, bukan bottom bar terpisah |
+### Layout System
 
-### Landing Page
+```
+resources/views/
+├── layouts/
+│   ├── app.blade.php          ← AppLayout (sidebar + topbar) untuk halaman authenticated
+│   └── guest.blade.php        ← GuestLayout (navbar + footer) untuk landing/auth
+├── components/
+│   ├── sidebar.blade.php      ← [NEW] Sidebar navigasi (reusable)
+│   ├── topbar.blade.php       ← [NEW] Top app bar (reusable)
+│   ├── stat-card.blade.php    ← [NEW] Widget statistik dashboard
+│   ├── glass-card.blade.php   ← [EXISTS] Glass card component
+│   ├── nav-link.blade.php     ← [EXISTS] Navigation link
+│   └── ...                    ← Breeze components (tetap)
+├── auth/
+│   ├── login.blade.php        ← [REDESIGN] Custom glassmorphism login
+│   └── register.blade.php     ← [REDESIGN] Custom glassmorphism register
+├── landing_page.blade.php     ← [REFACTOR] Pindah ke guest layout
+├── tentangkami.blade.php      ← [REFACTOR] Pindah ke guest layout
+├── dashboard.blade.php        ← [REBUILD] Dashboard dengan data real
+├── upload.blade.php           ← [REBUILD] Upload form + drag-drop + camera
+├── review.blade.php           ← [NEW] Halaman review hasil OCR
+├── transaksi.blade.php        ← [REFACTOR] Koneksi ke data real
+├── laporan.blade.php          ← [REFACTOR] Koneksi ke data real
+└── pengaturan.blade.php       ← [NEW] Halaman settings
+```
 
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| Hero section + CTA | ✅ KEEP | First impression, wajib ada |
-| Feature cards (3 kolom) | ✅ KEEP | Menjelaskan value proposition |
-| Floating icons animasi | 🟡 SIMPLIFY | CSS float saja, tanpa Canvas particles |
-| Particle background | ❌ **CUT** | Eye candy, bukan prioritas |
-| Demo video/preview | ❌ **CUT** | Belum ada yang bisa di-demo |
-
-### Authentication
-
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| Login page (glassmorphism) | ✅ KEEP | Core flow |
-| Register page | ✅ KEEP | Core flow |
-| Auth controllers & routes | ✅ KEEP | Menggunakan Laravel Breeze agar cepat |
-| Custom auth dari nol | ❌ **CUT** | Breeze sudah cukup untuk sprint ini |
-
-### Dashboard
-
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| StatWidget (pemasukan/pengeluaran/saldo) | ✅ KEEP | Inti dashboard |
-| Recent transactions list | ✅ KEEP | Essential information |
-| Quick actions panel | ✅ KEEP | UX shortcut penting |
-| CashFlowChart 3D interactive | 🟡 **SIMPLIFY** → Chart.js 2D | 3D terlalu lama, 2D dengan gradient sudah cukup bagus |
-| Chart bounce animation | ❌ **CUT** | Polish |
-
-### Upload & OCR
-
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| DragDropZone (file upload) | ✅ KEEP | Core feature |
-| Camera capture (mobile) | ✅ KEEP | Esensial untuk UMKM |
-| Google AI Studio OCR integration | ✅ KEEP | Diferensiasi utama app |
-| OcrProcessingOverlay (loading view) | 🟡 SIMPLIFY | Simple loading spinner + progress, tanpa scan-line animation |
-| Gravity Pull animation (file drop) | ❌ **CUT** | Cool tapi bukan prioritas |
-| Data Fly-Out animation (ke tabel) | ❌ **CUT** | Cool tapi bukan prioritas |
-| Upload history | 🟡 SIMPLIFY | Simple list saja |
-
-### Review & Transactions
-
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| ReviewPage (editable extracted data) | ✅ KEEP | User harus bisa koreksi OCR |
-| TransactionTable + filters | ✅ KEEP | Core feature |
-| CRUD operations | ✅ KEEP | Core feature |
-| CategoryBalls (physics visualization) | ❌ **CUT** | Gimmick visual, bukan essential |
-| Ball Physics animation | ❌ **CUT** | Berat & kompleks |
-
-### Reports
-
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| Arus Kas report page | ✅ KEEP | Core business value |
-| Laba/Rugi report | 🟡 SIMPLIFY | Basic table view, tanpa chart interaktif |
-| Export PDF (DomPDF) | ✅ KEEP | UMKM butuh cetak laporan |
-| Export Excel (Maatwebsite) | ❌ **CUT** | PDF cukup untuk v1, Excel nanti |
-| 3D Chart interaktif di report | ❌ **CUT** | Chart.js 2D sudah cukup |
-| Floating download animation | ❌ **CUT** | Polish |
-
-### Settings
-
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| Profil Usaha | ✅ KEEP | Basic profile |
-| Kategori Custom | 🟡 SIMPLIFY | Preset categories + simple add, bukan full CRUD |
-| Preferensi (tema, bahasa) | ❌ **CUT** | Nice to have |
-
-### Testing & Polish
-
-| Fitur | Keputusan | Alasan |
-|---|---|---|
-| Feature tests (Pest) | 🟡 SIMPLIFY | Hanya critical path: auth + upload + save |
-| Browser tests | ❌ **CUT** | Terlalu lama setup |
-| Lighthouse audit | ❌ **CUT** | Post-launch |
-| Mobile responsive | 🟡 SIMPLIFY | Basic responsive saja, bukan pixel-perfect |
-| Performance optimization | ❌ **CUT** | Post-launch |
-
----
-
-## Summary: Apa yang DI-CUT
-
-### ❌ Fitur yang Ditunda ke V2
-
-1. **ParticleCanvas** — background animasi canvas 60fps
-2. **CategoryBalls** — physics-based category visualization
-3. **3D Charts** — semua chart jadi 2D dengan gradient
-4. **Gravity Pull / Data Fly-Out animation** — animasi saat upload
-5. **Glass Shimmer** — hover effect pada card
-6. **Export Excel** — PDF saja dulu
-7. **Bottom Nav Bar mobile** — sidebar collapse saja
-8. **Browser tests** — manual testing dulu
-9. **Chart bounce animation** — hover effect chart
-10. **Preferensi settings** — tema & bahasa
-11. **Demo video di landing** — belum ada yang bisa di-demo
+### Konsolidasi Design System
 
 > [!IMPORTANT]
-> **Total effort yang di-cut: ~40% dari plan asli.** Mayoritas yang di-cut adalah **animasi/visual polish**, bukan fungsionalitas inti. Semua core UMKM flow tetap utuh.
+> Semua Tailwind config yang saat ini di-inline di setiap view (~170 baris per file) harus dipindahkan ke satu file `tailwind.config.js` yang sudah ada, dan semua view harus menggunakan Vite pipeline (`@vite`) bukan CDN.
 
----
+**Perubahan:**
+1. Pindahkan color palette + typography dari inline `<script>` ke `tailwind.config.js`
+2. Ganti `<script src="cdn.tailwindcss.com">` → `@vite(['resources/css/app.css', 'resources/js/app.js'])`
+3. Custom CSS utilities (`.glass-card`, `.glass-panel`, `.aurora-gradient`) → `resources/css/app.css`
 
-## 1-Week Sprint Schedule
+### Key Frontend Dependencies
 
-### 📅 Hari 1 — Jumat 9 Mei: Foundation + Design System
-
-| Task | Detail | Est. |
+| Library | Kegunaan | Install |
 |---|---|---|
-| Design tokens di `app.css` | Color palette, typography, spacing, glassmorphism utilities | 1.5h |
-| Install Laravel Breeze | `composer require laravel/breeze` + scaffolding | 0.5h |
-| Google Fonts setup | Inter + JetBrains Mono via Vite | 0.5h |
-| AppLayout component | Sidebar nav + topbar, responsive collapse | 2h |
-| GuestLayout component | Clean dark layout untuk auth/landing | 1h |
-| GlassCard component | Reusable Blade component | 0.5h |
-| Float animation CSS | Keyframes untuk elemen floating | 0.5h |
-
-**Deliverable:** Layout system berfungsi, bisa navigate antar halaman kosong
+| Chart.js | Grafik arus kas, laba rugi | `npm install chart.js` |
+| Alpine.js | Interaktivitas ringan (sudah via Breeze) | ✅ Sudah ada |
+| DomPDF | Export PDF server-side | `composer require barryvdh/laravel-dompdf` |
 
 ---
 
-### 📅 Hari 2 — Sabtu 10 Mei: Landing Page + Auth
+## 📋 Implementation Phases
 
-| Task | Detail | Est. |
-|---|---|---|
-| Landing page | Hero + floating icons (CSS only) + feature cards + footer | 3h |
-| Customize Login view | Glassmorphism form sesuai design system | 1.5h |
-| Customize Register view | Glassmorphism form sesuai design system | 1h |
-| Auth routes & middleware | Breeze default + custom redirects | 0.5h |
+### Phase 1: Foundation & Cleanup (Estimasi: 4-5 jam)
 
-**Deliverable:** User bisa register, login, dan melihat landing page
+> Membersihkan technical debt dan membangun fondasi yang benar.
 
----
-
-### 📅 Hari 3 — Minggu 11 Mei: Database + Dashboard
-
-| Task | Detail | Est. |
-|---|---|---|
-| Migrations | `businesses`, `categories`, `transactions`, `receipts` | 1.5h |
-| Models + Factories | Eloquent models dengan relationships + seeder | 1.5h |
-| Dashboard controller | Query summary data | 1h |
-| StatWidget component | 3 cards: pemasukan/pengeluaran/saldo | 1h |
-| Cash Flow Chart (2D) | Chart.js bar chart dengan gradient | 1.5h |
-| Recent transactions list | Simple list dari 5 transaksi terbaru | 0.5h |
-| Quick actions panel | Buttons: Scan Nota, Tambah Manual, Lihat Laporan | 0.5h |
-
-**Deliverable:** Dashboard fungsional dengan data seeder
+- [ ] Konsolidasi Tailwind config → `tailwind.config.js`
+- [ ] Migrasi semua view dari CDN Tailwind → Vite pipeline (`@vite`)
+- [ ] Pindahkan custom CSS ke `resources/css/app.css`
+- [ ] Rebuild `layouts/app.blade.php` — sidebar + topbar (dari design transaksi/laporan)
+- [ ] Rebuild `layouts/guest.blade.php` — navbar + footer (dari design landing)
+- [ ] Buat komponen: `sidebar.blade.php`, `topbar.blade.php`, `stat-card.blade.php`
+- [ ] Fix duplicate routes di `web.php`
+- [ ] Rename controllers ke PascalCase convention
+- [ ] Hapus file view duplikat (`login.blade.php` root, `upload.blade.php` copy)
 
 ---
 
-### 📅 Hari 4 — Senin 12 Mei: Upload + OCR Integration
+### Phase 2: Authentication & Landing Page (Estimasi: 3-4 jam)
 
-| Task | Detail | Est. |
-|---|---|---|
-| Upload page UI | DragDropZone + camera capture button | 2h |
-| File upload backend | Controller + validation + storage | 1h |
-| Google AI Studio service | OCR service class + API integration | 2.5h |
-| Processing overlay | Simple loading spinner + extracted data preview | 1h |
-| Upload history | Simple list of recent uploads | 0.5h |
+> Auth berfungsi penuh + Landing page terhubung.
 
-**Deliverable:** User bisa upload foto nota dan lihat hasil OCR
-
----
-
-### 📅 Hari 5 — Selasa 13 Mei: Review + Transactions
-
-| Task | Detail | Est. |
-|---|---|---|
-| Review page | Editable table dari hasil OCR + category dropdown | 2h |
-| Save to database flow | Approve → simpan transactions ke DB | 1h |
-| Transaction list page | Full list + filter (tanggal, kategori, tipe) | 2h |
-| Transaction CRUD | Edit & delete existing transactions | 1.5h |
-| Manual transaction add | Form untuk tambah manual tanpa OCR | 0.5h |
-
-**Deliverable:** Full transaction lifecycle: upload → review → save → manage
+- [ ] Redesign `auth/login.blade.php` → glassmorphism sesuai design system
+- [ ] Redesign `auth/register.blade.php` → glassmorphism sesuai design system
+- [ ] Refactor `landing_page.blade.php` → gunakan `guest` layout
+- [ ] Refactor `tentangkami.blade.php` → gunakan `guest` layout
+- [ ] Hubungkan semua navigasi link (Fitur, Tentang Kami, Masuk, Mulai Gratis)
+- [ ] Pastikan middleware: guest pages accessible, auth pages protected
 
 ---
 
-### 📅 Hari 6 — Rabu 14 Mei: Reports + Settings
+### Phase 3: Database & Dashboard (Estimasi: 5-6 jam)
 
-| Task | Detail | Est. |
-|---|---|---|
-| Arus Kas report | Chart.js line chart + summary table | 2h |
-| Laba/Rugi report | Basic table view income vs expense | 1.5h |
-| Export PDF | DomPDF integration + styled template | 2h |
-| Settings: Profil Usaha | Form edit nama toko, alamat, dll | 1h |
-| Settings: Kategori | Preset list + simple add new | 0.5h |
+> Schema database lengkap + Dashboard fungsional dengan data real.
 
-**Deliverable:** User bisa lihat laporan dan export PDF
-
----
-
-### 📅 Hari 7 — Kamis 15 Mei: Polish + Testing
-
-| Task | Detail | Est. |
-|---|---|---|
-| Responsive pass | Cek semua halaman di mobile viewport | 1.5h |
-| Pest feature tests | Auth flow + upload + transaction save | 2h |
-| Bug fixes | Dari testing manual | 2h |
-| Final UI polish | Spacing, alignment, color consistency | 1h |
-| Pint formatting | `vendor/bin/pint --dirty` | 0.5h |
-
-**Deliverable:** App siap demo, responsive, tested
+- [ ] Buat migration: `businesses`, `categories`, `receipts`, `receipt_items`, `transactions`
+- [ ] Buat model: `Business`, `Category`, `Transaction`, `Receipt`, `ReceiptItem`
+- [ ] Buat factory + seeder untuk data demo
+- [ ] Seeder kategori default (Bahan Baku, Operasional, Gaji, Transportasi, dll)
+- [ ] Buat `DashboardController` dengan query summary
+- [ ] Rebuild `dashboard.blade.php`:
+  - Stat cards (total pemasukan, pengeluaran, saldo)
+  - Chart.js bar chart arus kas
+  - 5 transaksi terbaru
+  - Quick action buttons
+- [ ] Buat `DashboardService` untuk aggregasi data
+- [ ] Auto-create business profile setelah register
 
 ---
 
-## Open Questions
+### Phase 4: Upload & OCR (Estimasi: 5-6 jam)
 
-> [!IMPORTANT]
-> 1. **Google AI Studio API Key:** Sudah punya atau perlu bikin baru? Ini blocker untuk Hari 4.
-> 2. **Auth method:** Boleh pakai Laravel Breeze untuk percepatan? Atau harus custom?
-> 3. **Chart library:** Chart.js OK untuk versi 2D, atau ada preferensi lain?
-> 4. **Bahasa UI:** Full Bahasa Indonesia?
-> 5. **Hari kerja:** Sprint mulai hari ini (Jumat 9 Mei) atau mulai Senin depan?
+> Fitur inti — upload nota dan proses dengan AI.
+
+- [ ] Rebuild `upload.blade.php`:
+  - Drag & drop zone
+  - Camera capture (mobile)
+  - Upload history list
+- [ ] Buat `UploadController` + `UploadReceiptRequest`
+- [ ] Buat `OcrService` — integrasi Google AI Studio / Gemini Vision API
+- [ ] Buat `review.blade.php` — tampilkan hasil OCR editable
+- [ ] Buat `ReviewController` — approve & save ke transactions
+- [ ] Processing overlay (loading + progress)
+- [ ] Store uploaded images ke `storage/app/receipts`
 
 ---
 
-## Verification Plan
+### Phase 5: Transaksi & Review (Estimasi: 4-5 jam)
 
-### Automated Tests
-- `php artisan test --compact` — critical path tests only
-- Auth: register → login → access dashboard
-- Upload: file upload → OCR response → save transaction
-- Report: generate PDF download
+> CRUD transaksi lengkap + filter/search.
+
+- [ ] Refactor `transaksi.blade.php` → koneksi data real
+- [ ] Buat `TransactionController` (full resource)
+- [ ] Form tambah transaksi manual
+- [ ] Edit & hapus transaksi
+- [ ] Filter: tanggal, kategori, tipe (income/expense)
+- [ ] Search transaksi
+- [ ] Pagination
+- [ ] Bubble chart visualization dengan data real
+
+---
+
+### Phase 6: Laporan & Settings (Estimasi: 4-5 jam)
+
+> Laporan keuangan + export + pengaturan.
+
+- [ ] Refactor `laporan.blade.php` → koneksi data real
+- [ ] Buat `ReportController` + `ReportService`
+- [ ] Laporan Arus Kas (chart + tabel)
+- [ ] Laporan Laba Rugi (tabel income vs expense)
+- [ ] Rekap Kategori (pie chart + breakdown)
+- [ ] Export PDF (DomPDF)
+- [ ] Buat `pengaturan.blade.php`:
+  - Form profil usaha
+  - Manage kategori custom
+- [ ] Buat `SettingController`
+
+---
+
+## ✅ Verification Plan
+
+### Automated Tests (Pest)
+```bash
+php artisan test --compact --filter=AuthTest       # Register + Login + Logout
+php artisan test --compact --filter=DashboardTest   # Access dashboard with data
+php artisan test --compact --filter=TransactionTest # CRUD transaksi
+php artisan test --compact --filter=UploadTest      # Upload file + validation
+php artisan test --compact --filter=ReportTest      # Generate report data
+```
 
 ### Manual Verification
 - Visual QA di Chrome desktop + mobile viewport
-- Test upload foto nota asli (bukan dummy)
+- Test upload foto nota asli
 - Verify PDF export output
+- Test semua navigasi link berfungsi
+- Test responsive sidebar collapse
 
 ---
 
-## V2 Backlog (Post-Sprint)
+## ❓ Open Questions
 
-Fitur yang di-cut akan masuk backlog untuk sprint berikutnya:
+> [!IMPORTANT]
+> **Pertanyaan berikut perlu dijawab sebelum memulai implementasi:**
 
-1. ParticleCanvas background animation
-2. CategoryBalls physics visualization  
-3. 3D interactive charts
-4. Gravity Pull & Data Fly-Out animations
-5. Export Excel (Maatwebsite)
-6. Bottom navigation bar (mobile native feel)
-7. Glass Shimmer hover effects
-8. Chart bounce animations
-9. Preferensi settings (tema/bahasa)
-10. Browser tests & Lighthouse audit
-11. PWA offline support
-12. Performance optimization & code splitting
+1. **Google AI Studio API Key:** Apakah sudah punya API key untuk OCR? Ini blocker untuk Phase 4. Jika belum, apakah ingin menggunakan mock/dummy OCR dulu?
+
+2. **Chart Library:** Plan ini menggunakan **Chart.js**. Ada preferensi lain (ApexCharts, ECharts)?
+
+3. **PDF Export:** Plan ini menggunakan **DomPDF** (`barryvdh/laravel-dompdf`). Apakah OK atau ada preferensi lain?
+
+4. **Bahasa UI:** Semua UI tetap **Bahasa Indonesia** penuh?
+
+5. **Kategori Default:** Berikut kategori yang akan di-seed sebagai default. Apakah ada yang perlu ditambah/ubah?
+   - **Pengeluaran:** Bahan Baku, Operasional, Gaji Karyawan, Transportasi, Sewa, Utilitas (Listrik/Air), Kemasan, Marketing, Lainnya
+   - **Pemasukan:** Penjualan Produk, Penjualan Jasa, Pendapatan Lainnya
+
+6. **Prioritas Phase:** Apakah urutan phase di atas sudah sesuai? Atau ada phase yang ingin didahulukan?
+
+7. **Deployment Target:** Apakah website ini akan dideploy (Laravel Cloud, VPS, shared hosting)? Ini mempengaruhi konfigurasi.
