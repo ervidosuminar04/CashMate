@@ -3,17 +3,13 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('landing_page', function () {
+    return view('landing_page');
+})->name('landing_page');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::get('landing_page', function () {
-    return view('landing_page');
-})->name('landing_page');
 
 Route::get('upload', function () {
     return view('upload');
