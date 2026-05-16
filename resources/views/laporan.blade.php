@@ -1,123 +1,238 @@
 <x-app-layout>
     <x-slot name="title">Laporan Keuangan</x-slot>
     
-    <!-- Selectors -->
-    <section>
-        <h2 class="font-headline-md text-headline-md text-on-surface mb-md">Pilih Jenis Laporan</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-md">
-            <!-- Active Selector -->
-            <div class="glass-panel rounded-xl p-md cursor-pointer border-l-4 border-l-primary relative overflow-hidden group shadow-lg shadow-primary/10 transform transition-transform hover:-translate-y-1">
-                <div class="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-colors"></div>
-                <div class="flex items-start justify-between relative z-10">
-                    <div>
-                        <h3 class="font-label-md text-label-md text-primary font-bold mb-1">Arus Kas Bulanan</h3>
-                        <p class="font-body-md text-body-md text-on-surface-variant">Pantau uang masuk dan keluar secara rinci.</p>
-                    </div>
-                    <div class="p-sm bg-primary-container/20 rounded-full text-primary">
-                        <span class="material-symbols-outlined" data-icon="water_drop">water_drop</span>
-                    </div>
-                </div>
-            </div>
-            <!-- Inactive Selectors -->
-            <div class="glass-panel rounded-xl p-md cursor-pointer hover:border-l-4 hover:border-l-primary/50 relative overflow-hidden group transform transition-transform hover:-translate-y-1">
-                <div class="flex items-start justify-between relative z-10">
-                    <div>
-                        <h3 class="font-label-md text-label-md text-on-surface font-semibold mb-1">Laba Rugi</h3>
-                        <p class="font-body-md text-body-md text-on-surface-variant">Ringkasan pendapatan dan beban usaha.</p>
-                    </div>
-                    <div class="p-sm bg-surface-container-high rounded-full text-on-surface-variant">
-                        <span class="material-symbols-outlined" data-icon="trending_up">trending_up</span>
-                    </div>
-                </div>
-            </div>
-            <div class="glass-panel rounded-xl p-md cursor-pointer hover:border-l-4 hover:border-l-primary/50 relative overflow-hidden group transform transition-transform hover:-translate-y-1">
-                <div class="flex items-start justify-between relative z-10">
-                    <div>
-                        <h3 class="font-label-md text-label-md text-on-surface font-semibold mb-1">Rekap Kategori</h3>
-                        <p class="font-body-md text-body-md text-on-surface-variant">Analisis pengeluaran berdasarkan kategori.</p>
-                    </div>
-                    <div class="p-sm bg-surface-container-high rounded-full text-on-surface-variant">
-                        <span class="material-symbols-outlined" data-icon="pie_chart">pie_chart</span>
-                    </div>
-                </div>
-            </div>
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-lg">
+        <div>
+            <h2 class="font-headline-md text-headline-md text-on-surface mb-xs">Laporan Keuangan</h2>
+            <p class="font-body-md text-body-md text-on-surface-variant">Analisis komprehensif arus kas, laba rugi, dan pengeluaran.</p>
         </div>
-    </section>
+        
+        <div class="w-full md:w-auto">
+            <form action="{{ route('laporan') }}" method="GET" class="flex flex-wrap items-center gap-sm">
+                <div class="flex items-center gap-2 bg-surface-container rounded-lg p-1 border border-outline-variant">
+                    <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="bg-transparent border-none focus:ring-0 text-sm py-1 px-2" onchange="this.form.submit()">
+                    <span class="text-on-surface-variant">-</span>
+                    <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="bg-transparent border-none focus:ring-0 text-sm py-1 px-2" onchange="this.form.submit()">
+                </div>
+                
+                <a href="{{ route('laporan.pdf', request()->all()) }}" target="_blank" class="px-md py-2 rounded-lg bg-white text-on-surface border border-outline-variant hover:bg-surface-container-lowest transition-colors shadow-sm flex items-center gap-2 font-label-md text-label-md">
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                    Cetak PDF
+                </a>
+            </form>
+        </div>
+    </div>
 
-    <!-- Report Preview Area -->
-    <section class="glass-panel rounded-xl p-lg relative overflow-hidden">
-        <!-- Decorative background blur -->
-        <div class="absolute top-0 right-0 w-64 h-64 bg-secondary/5 rounded-full blur-3xl -z-10"></div>
-        <div class="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10"></div>
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-lg gap-md border-b border-outline-variant/30 pb-md">
-            <div>
-                <h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">Laporan Arus Kas - Mei 2026</h2>
-                <div class="flex items-center gap-2 mt-2">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md">
-                        <span class="material-symbols-outlined text-[16px] mr-1" data-icon="calendar_month">calendar_month</span>
-                        01 Mei - 31 Mei 2026
-                    </span>
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-md mb-lg">
+        <x-stat-card title="Total Pemasukan" value="Rp {{ number_format($profitLossData['total_income'], 0, ',', '.') }}" icon="arrow_downward" color="primary" />
+        <x-stat-card title="Total Pengeluaran" value="Rp {{ number_format($profitLossData['total_expense'], 0, ',', '.') }}" icon="arrow_upward" color="error" />
+        <x-stat-card title="Laba Bersih" value="Rp {{ number_format($profitLossData['net_profit'], 0, ',', '.') }}" icon="account_balance" color="{{ $profitLossData['net_profit'] >= 0 ? 'primary' : 'error' }}" />
+        <x-stat-card title="Margin Laba" value="{{ number_format($profitLossData['profit_margin'], 1) }}%" icon="percent" color="secondary" />
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-lg mb-lg">
+        <!-- Cash Flow Line Chart -->
+        <div class="xl:col-span-2">
+            <x-glass-card class="p-lg h-full flex flex-col min-h-[400px]">
+                <h3 class="font-title-lg text-title-lg text-on-surface mb-md">Arus Kas Harian</h3>
+                <div class="flex-1 relative w-full">
+                    <canvas id="cashFlowChart"></canvas>
                 </div>
-            </div>
-            <div class="flex flex-wrap gap-sm">
-                <button class="px-md py-sm rounded bg-white text-on-surface border border-outline-variant hover:bg-surface-container-lowest transition-colors shadow-sm flex items-center gap-2 font-label-md text-label-md">
-                    <span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
-                    Download PDF
-                </button>
-                <button class="px-md py-sm rounded bg-white text-on-surface border border-outline-variant hover:bg-surface-container-lowest transition-colors shadow-sm flex items-center gap-2 font-label-md text-label-md">
-                    <span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
-                    Download XLS
-                </button>
-            </div>
+            </x-glass-card>
         </div>
-        <!-- Summary Cards within Preview -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-md mb-xl">
-            <div class="bg-surface-container-lowest/50 rounded-lg p-md border border-white/40 shadow-sm">
-                <div class="font-label-md text-label-md text-on-surface-variant mb-1 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px] text-primary" data-icon="arrow_downward">arrow_downward</span>
-                    Total Pemasukan
-                </div>
-                <div class="font-headline-md text-headline-md font-bold text-on-surface">Rp 45.000.000</div>
-            </div>
-            <div class="bg-surface-container-lowest/50 rounded-lg p-md border border-white/40 shadow-sm">
-                <div class="font-label-md text-label-md text-on-surface-variant mb-1 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px] text-error" data-icon="arrow_upward">arrow_upward</span>
-                    Total Pengeluaran
-                </div>
-                <div class="font-headline-md text-headline-md font-bold text-on-surface">Rp 28.500.000</div>
-            </div>
-            <div class="bg-primary/5 rounded-lg p-md border border-primary/20 shadow-sm relative overflow-hidden">
-                <div class="absolute right-0 top-0 h-full w-1 bg-primary rounded-r"></div>
-                <div class="font-label-md text-label-md text-primary font-bold mb-1 flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]" data-icon="account_balance">account_balance</span>
-                    Saldo Bersih
-                </div>
-                <div class="font-headline-md text-headline-md font-bold text-primary">Rp 16.500.000</div>
-            </div>
+
+        <!-- Category Doughnut Chart -->
+        <div class="xl:col-span-1">
+            <x-glass-card class="p-lg h-full flex flex-col min-h-[400px]">
+                <h3 class="font-title-lg text-title-lg text-on-surface mb-md">Pengeluaran per Kategori</h3>
+                @if(count($categoryBreakdown) > 0)
+                    <div class="flex-1 relative w-full flex justify-center items-center">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                @else
+                    <div class="flex-1 flex flex-col justify-center items-center text-on-surface-variant opacity-70">
+                        <span class="material-symbols-outlined text-[48px] mb-sm">pie_chart</span>
+                        <p>Belum ada data pengeluaran</p>
+                    </div>
+                @endif
+            </x-glass-card>
         </div>
-        <!-- Chart Preview Area -->
-        <div class="bg-white/40 rounded-xl p-md border border-white/60 h-64 flex flex-col items-center justify-center relative overflow-hidden">
-            <!-- Faux Chart Lines -->
-            <div class="absolute inset-0 flex flex-col justify-between py-8 px-12 opacity-20 pointer-events-none">
-                <div class="w-full h-px bg-outline-variant"></div>
-                <div class="w-full h-px bg-outline-variant"></div>
-                <div class="w-full h-px bg-outline-variant"></div>
-                <div class="w-full h-px bg-outline-variant"></div>
+    </div>
+
+    <!-- Category Table -->
+    <x-glass-card class="p-lg mb-lg">
+        <h3 class="font-title-lg text-title-lg text-on-surface mb-md">Rincian Pengeluaran</h3>
+        
+        @if(count($categoryBreakdown) > 0)
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-body-md text-on-surface border-collapse">
+                    <thead class="bg-surface-container border-b border-outline-variant">
+                        <tr>
+                            <th class="p-md font-bold">Kategori</th>
+                            <th class="p-md font-bold text-right">Total Pengeluaran</th>
+                            <th class="p-md font-bold text-right">Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant">
+                        @foreach($categoryBreakdown as $category)
+                            @php
+                                $percentage = $profitLossData['total_expense'] > 0 
+                                    ? ($category->total / $profitLossData['total_expense']) * 100 
+                                    : 0;
+                            @endphp
+                            <tr class="hover:bg-surface-container-low transition-colors">
+                                <td class="p-md">
+                                    <div class="flex items-center gap-xs">
+                                        <span class="w-3 h-3 rounded-full" style="background-color: {{ $category->color ?? '#ccc' }}"></span>
+                                        {{ $category->name }}
+                                    </div>
+                                </td>
+                                <td class="p-md text-right font-medium text-error">
+                                    Rp {{ number_format($category->total, 0, ',', '.') }}
+                                </td>
+                                <td class="p-md text-right">
+                                    <div class="flex items-center justify-end gap-sm">
+                                        <span>{{ number_format($percentage, 1) }}%</span>
+                                        <div class="w-24 h-2 bg-surface-container rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full" style="width: {{ $percentage }}%; background-color: {{ $category->color ?? '#ccc' }}"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-            <div class="relative z-10 text-center">
-                <span class="material-symbols-outlined text-display-xl text-primary/30 mb-2" data-icon="bar_chart">bar_chart</span>
-                <p class="font-body-md text-body-md text-on-surface-variant max-w-sm mx-auto">
-                    Grafik arus kas harian untuk periode Mei 2026. Data siap untuk diunduh dalam laporan lengkap.
-                </p>
+        @else
+            <div class="text-center py-xl text-on-surface-variant border border-dashed border-outline-variant rounded-xl">
+                Tidak ada data pengeluaran pada periode ini.
             </div>
-            <!-- Decorative AI Insight Overlay -->
-            <div class="absolute bottom-4 left-4 right-4 bg-surface-container-lowest/80 backdrop-blur-md border-l-4 border-l-tertiary-fixed-dim rounded shadow-md p-sm flex items-start gap-3">
-                <span class="material-symbols-outlined text-tertiary-fixed-dim animate-pulse" data-icon="auto_awesome">auto_awesome</span>
-                <div>
-                    <span class="font-label-md text-label-md text-on-surface block mb-1">Wawasan AI</span>
-                    <span class="font-body-md text-body-md text-on-surface-variant">Arus kas bulan ini menunjukkan peningkatan margin 12% dibandingkan bulan lalu, didorong oleh efisiensi biaya operasional.</span>
-                </div>
-            </div>
-        </div>
-    </section>
+        @endif
+    </x-glass-card>
+
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cash Flow Chart
+            const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
+            const cashFlowLabels = @json(array_map(function($date) {
+                return \Carbon\Carbon::parse($date)->format('d M');
+            }, $cashFlowData['labels']));
+            
+            new Chart(cashFlowCtx, {
+                type: 'line',
+                data: {
+                    labels: cashFlowLabels,
+                    datasets: [
+                        {
+                            label: 'Pemasukan',
+                            data: @json($cashFlowData['income']),
+                            borderColor: '#22c55e',
+                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: 'Pengeluaran',
+                            data: @json($cashFlowData['expense']),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(context.parsed.y);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    if(value >= 1000000) return (value/1000000).toFixed(1) + 'M';
+                                    if(value >= 1000) return (value/1000).toFixed(0) + 'K';
+                                    return value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Category Doughnut Chart
+            @if(count($categoryBreakdown) > 0)
+                const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+                const categoryData = @json($categoryBreakdown);
+                
+                const labels = categoryData.map(item => item.name);
+                const data = categoryData.map(item => item.total);
+                const colors = categoryData.map(item => item.color || '#cccccc');
+                
+                new Chart(categoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors,
+                            borderWidth: 1,
+                            borderColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.raw;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        const formattedValue = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
+                                        
+                                        return `${formattedValue} (${percentage}%)`;
+                                    }
+                                }
+                            }
+                        },
+                        cutout: '70%'
+                    }
+                });
+            @endif
+        });
+    </script>
+    @endpush
 </x-app-layout>

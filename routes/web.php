@@ -5,6 +5,7 @@ use App\Http\Controllers\LandingPageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TentangKamiController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UploadController;
@@ -23,7 +24,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/transaksi', [TransactionController::class, 'store'])->name('transaksi.store');
     Route::put('/transaksi/{transaction}', [TransactionController::class, 'update'])->name('transaksi.update');
     Route::delete('/transaksi/{transaction}', [TransactionController::class, 'destroy'])->name('transaksi.destroy');
+
     Route::get('/laporan', [ReportController::class, 'index'])->name('laporan');
+    Route::get('/laporan/pdf', [ReportController::class, 'exportPdf'])->name('laporan.pdf');
+
+    Route::get('/pengaturan', [SettingController::class, 'index'])->name('pengaturan');
+    Route::post('/pengaturan/profil', [SettingController::class, 'updateProfile'])->name('pengaturan.profil.update');
+    Route::post('/pengaturan/kategori', [SettingController::class, 'storeCategory'])->name('pengaturan.kategori.store');
+    Route::delete('/pengaturan/kategori/{category}', [SettingController::class, 'destroyCategory'])->name('pengaturan.kategori.destroy');
 });
 
 Route::middleware('auth')->group(function () {
