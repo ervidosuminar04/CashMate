@@ -23,7 +23,7 @@
                 <form action="{{ route('upload.process') }}" method="POST" enctype="multipart/form-data" id="uploadForm">
                     @csrf
                     
-                    <div class="border-2 border-dashed border-outline-variant rounded-2xl p-xl text-center hover:bg-surface-container/50 transition-colors duration-200" id="dropzone">
+                    <div class="border-2 border-dashed border-outline-variant rounded-2xl p-xl text-center hover:bg-surface-container/50 transition-colors duration-200 cursor-pointer" id="dropzone" onclick="document.getElementById('receipt_image').click()">
                         <input type="file" name="receipt_image" id="receipt_image" class="hidden" accept="image/jpeg,image/png,image/jpg" capture="environment" required>
                         
                         <div class="flex flex-col items-center justify-center space-y-md pointer-events-none" id="uploadPlaceholder">
@@ -38,8 +38,8 @@
                                 <p class="text-body-sm text-on-surface-variant mt-xs">Mendukung JPG, JPEG, PNG (Maks. 5MB)</p>
                             </div>
                             <div class="flex gap-sm mt-sm pointer-events-auto">
-                                <button type="button" class="btn btn-outline" onclick="document.getElementById('receipt_image').click()">Pilih dari Galeri</button>
-                                <button type="button" class="btn btn-primary" onclick="triggerCamera()">Ambil Foto</button>
+                                <button type="button" class="btn btn-outline" onclick="event.stopPropagation(); document.getElementById('receipt_image').click()">Pilih dari Galeri</button>
+                                <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); triggerCamera()">Ambil Foto</button>
                             </div>
                         </div>
 

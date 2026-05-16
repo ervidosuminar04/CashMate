@@ -34,8 +34,8 @@ class OcrService
 
             $imageData = base64_encode(file_get_contents($imagePath));
 
-            // Gemini 1.5 Flash endpoint
-            $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+            // Gemini Flash Latest endpoint
+            $endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent';
 
             $payload = [
                 'contents' => [
@@ -45,8 +45,8 @@ class OcrService
                                 'text' => "Extract the purchased items from this receipt image. Focus on finding the item name, quantity, unit price, and total price for each item. Format the response as a JSON array of objects, where each object has exactly these keys: 'item_name' (string), 'quantity' (integer), 'unit_price' (number), and 'total_price' (number). If the quantity is missing, assume 1. Output ONLY a valid JSON array, without any markdown formatting.",
                             ],
                             [
-                                'inline_data' => [
-                                    'mime_type' => $mimeType,
+                                'inlineData' => [
+                                    'mimeType' => $mimeType,
                                     'data' => $imageData,
                                 ],
                             ],
@@ -54,7 +54,7 @@ class OcrService
                     ],
                 ],
                 'generationConfig' => [
-                    'response_mime_type' => 'application/json',
+                    'responseMimeType' => 'application/json',
                 ],
             ];
 
