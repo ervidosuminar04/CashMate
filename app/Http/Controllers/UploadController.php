@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class upload extends Controller
+class UploadController extends Controller
 {
-    public function upload() {
+    public function index()
+    {
         return view('upload');
     }
 }

@@ -1,43 +1,23 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LandingPageController;
+use App\Http\Controllers\TentangKamiController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UploadController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('landing_page');
-})->name('landing_page');
+Route::get('/', [LandingPageController::class, 'index'])->name('landing_page');
+Route::get('/tentang-kami', [TentangKamiController::class, 'index'])->name('tentang-kami');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::get('upload', function () {
-    return view('upload');
-})->name('upload');
-
-Route::get('login', function () {
-    return view('auth.login');
-})->name('login');
-
-Route::get('register', function () {
-    return view('auth.register');
-})->name('register');
-
-Route::get('tentangkami', function () {
-    return view('tentangkami');
-})->name('tentangkami');
-
-Route::get('login', function () {
-    return view('auth.login');
-})->name('login');
-
-Route::get('register', function () {
-    return view('auth.register');
-})->name('register');
-
-Route::get('laporan', function () {
-    return view('laporan');
-})->name('laporan');
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/upload', [UploadController::class, 'index'])->name('upload');
+    Route::get('/transaksi', [TransactionController::class, 'index'])->name('transaksi');
+    Route::get('/laporan', [ReportController::class, 'index'])->name('laporan');
+});
 
 
 Route::middleware('auth')->group(function () {

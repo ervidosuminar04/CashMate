@@ -33,14 +33,14 @@
 | 1 | **Views statis tanpa data** | 🔴 Critical | Semua halaman (dashboard, transaksi, laporan) berisi data hardcoded, bukan dari database |
 | 2 | **Dashboard/Upload/Login = copy Landing** | 🔴 Critical | 3 file view identik dengan `landing_page.blade.php` — belum ada konten asli |
 | 3 | **Tidak ada database schema bisnis** | 🔴 Critical | Belum ada tabel `transactions`, `categories`, `receipts`, `businesses` |
-| 4 | **Routes duplikat** | 🟡 Major | Route `login` dan `register` didefinisikan 2x di `web.php` (line 18-24 dan 30-36) |
+| 4 | **Routes duplikat** | ✅ Fixed | Dibersihkan dari `web.php` & `auth.php` |
 | 5 | **Controllers tidak terpakai** | 🟡 Major | 6 controller dibuat tapi routes menggunakan closure, bukan controller |
-| 6 | **Navigasi tidak terhubung** | 🟡 Major | Semua link navbar menggunakan `href="#"` — tidak mengarah ke halaman manapun |
+| 6 | **Navigasi tidak terhubung** | ✅ Fixed | Semua link di `guest.blade.php` sudah terhubung |
 | 7 | **CDN Tailwind bukan Vite** | 🟡 Major | Views menggunakan `cdn.tailwindcss.com` bukan Vite pipeline yang sudah terkonfigurasi |
 | 8 | **Tailwind config duplikasi** | 🟡 Major | Setiap view memiliki `<script>tailwind.config</script>` sendiri (~170 baris per file) |
-| 9 | **Tidak ada layout system** | 🟡 Major | Breeze layout (`layouts/app.blade.php`) tidak digunakan oleh halaman custom |
+| 9 | **Tidak ada layout system** | ✅ Fixed | Menggunakan `app`, `guest`, dan `auth` layouts |
 | 10 | **Controller naming convention** | 🟠 Minor | Controller menggunakan lowercase (`tentangkami.php`, `dashboard.php`) bukan PascalCase |
-| 11 | **Tidak ada middleware protection** | 🟠 Minor | Halaman dashboard/transaksi/laporan bisa diakses tanpa login |
+| 11 | **Tidak ada middleware protection** | ✅ Fixed | Middleware `auth` & `verified` sudah diterapkan & ditest |
 | 12 | **Tidak ada CSRF/form handling** | 🟠 Minor | Semua button/form hanya UI, tidak ada POST action |
 
 ---
@@ -291,12 +291,12 @@ resources/views/
 
 > Auth berfungsi penuh + Landing page terhubung.
 
-- [ ] Redesign `auth/login.blade.php` → glassmorphism sesuai design system
-- [ ] Redesign `auth/register.blade.php` → glassmorphism sesuai design system
-- [ ] Refactor `landing_page.blade.php` → gunakan `guest` layout
-- [ ] Refactor `tentangkami.blade.php` → gunakan `guest` layout
-- [ ] Hubungkan semua navigasi link (Fitur, Tentang Kami, Masuk, Mulai Gratis)
-- [ ] Pastikan middleware: guest pages accessible, auth pages protected
+- [x] Redesign `auth/login.blade.php` → glassmorphism sesuai design system
+- [x] Redesign `auth/register.blade.php` → glassmorphism sesuai design system
+- [x] Refactor `landing_page.blade.php` → gunakan `guest` layout
+- [x] Refactor `tentangkami.blade.php` → gunakan `guest` layout
+- [x] Hubungkan semua navigasi link (Fitur, Tentang Kami, Masuk, Mulai Gratis)
+- [x] Pastikan middleware: guest pages accessible, auth pages protected
 
 ---
 
@@ -393,18 +393,18 @@ php artisan test --compact --filter=ReportTest      # Generate report data
 > [!IMPORTANT]
 > **Pertanyaan berikut perlu dijawab sebelum memulai implementasi:**
 
-1. **Google AI Studio API Key:** Apakah sudah punya API key untuk OCR? Ini blocker untuk Phase 4. Jika belum, apakah ingin menggunakan mock/dummy OCR dulu?
+1. ~~**Google AI Studio API Key:** Apakah sudah punya API key untuk OCR?~~ ✅ *(Sudah ditambahkan, `OcrService` telah dibuat)*
 
-2. **Chart Library:** Plan ini menggunakan **Chart.js**. Ada preferensi lain (ApexCharts, ECharts)?
+2. ~~**Chart Library:** Plan ini menggunakan **Chart.js**. Ada preferensi lain?~~ ✅ *(Dikonfirmasi menggunakan Chart.js)*
 
-3. **PDF Export:** Plan ini menggunakan **DomPDF** (`barryvdh/laravel-dompdf`). Apakah OK atau ada preferensi lain?
+3. ~~**PDF Export:** Plan ini menggunakan **DomPDF** (`barryvdh/laravel-dompdf`). Apakah OK atau ada preferensi lain?~~ ✅ *(Dikonfirmasi menggunakan DomPDF)*
 
-4. **Bahasa UI:** Semua UI tetap **Bahasa Indonesia** penuh?
+4. ~~**Bahasa UI:** Semua UI tetap **Bahasa Indonesia** penuh?~~ ✅ *(Dikonfirmasi)*
 
-5. **Kategori Default:** Berikut kategori yang akan di-seed sebagai default. Apakah ada yang perlu ditambah/ubah?
+5. ~~**Kategori Default:** Berikut kategori yang akan di-seed sebagai default. Apakah ada yang perlu ditambah/ubah?~~ ✅ *(Dikonfirmasi, tidak ada perubahan)*
    - **Pengeluaran:** Bahan Baku, Operasional, Gaji Karyawan, Transportasi, Sewa, Utilitas (Listrik/Air), Kemasan, Marketing, Lainnya
    - **Pemasukan:** Penjualan Produk, Penjualan Jasa, Pendapatan Lainnya
 
-6. **Prioritas Phase:** Apakah urutan phase di atas sudah sesuai? Atau ada phase yang ingin didahulukan?
+6. ~~**Prioritas Phase:** Apakah urutan phase di atas sudah sesuai? Atau ada phase yang ingin didahulukan?~~ ✅ *(Dikonfirmasi)*
 
 7. **Deployment Target:** Apakah website ini akan dideploy (Laravel Cloud, VPS, shared hosting)? Ini mempengaruhi konfigurasi.
