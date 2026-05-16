@@ -30,11 +30,11 @@
 
 | # | Masalah | Severity | Detail |
 |---|---|---|---|
-| 1 | **Views statis tanpa data** | 🔴 Critical | Semua halaman (dashboard, transaksi, laporan) berisi data hardcoded, bukan dari database |
-| 2 | **Dashboard/Upload/Login = copy Landing** | 🔴 Critical | 3 file view identik dengan `landing_page.blade.php` — belum ada konten asli |
-| 3 | **Tidak ada database schema bisnis** | 🔴 Critical | Belum ada tabel `transactions`, `categories`, `receipts`, `businesses` |
+| 1 | **Views statis tanpa data** | ✅ Fixed | Dashboard sudah menggunakan data real dari DB |
+| 2 | **Dashboard/Upload/Login = copy Landing** | ✅ Fixed | Dashboard sudah direbuild dengan UI asli |
+| 3 | **Tidak ada database schema bisnis** | ✅ Fixed | Migration lengkap sudah dibuat & dijalankan |
 | 4 | **Routes duplikat** | ✅ Fixed | Dibersihkan dari `web.php` & `auth.php` |
-| 5 | **Controllers tidak terpakai** | 🟡 Major | 6 controller dibuat tapi routes menggunakan closure, bukan controller |
+| 5 | **Controllers tidak terpakai** | ✅ Fixed | Routes sudah menggunakan Controller (Dashboard, dll) |
 | 6 | **Navigasi tidak terhubung** | ✅ Fixed | Semua link di `guest.blade.php` sudah terhubung |
 | 7 | **CDN Tailwind bukan Vite** | 🟡 Major | Views menggunakan `cdn.tailwindcss.com` bukan Vite pipeline yang sudah terkonfigurasi |
 | 8 | **Tailwind config duplikasi** | 🟡 Major | Setiap view memiliki `<script>tailwind.config</script>` sendiri (~170 baris per file) |
@@ -304,18 +304,18 @@ resources/views/
 
 > Schema database lengkap + Dashboard fungsional dengan data real.
 
-- [ ] Buat migration: `businesses`, `categories`, `receipts`, `receipt_items`, `transactions`
-- [ ] Buat model: `Business`, `Category`, `Transaction`, `Receipt`, `ReceiptItem`
-- [ ] Buat factory + seeder untuk data demo
-- [ ] Seeder kategori default (Bahan Baku, Operasional, Gaji, Transportasi, dll)
-- [ ] Buat `DashboardController` dengan query summary
-- [ ] Rebuild `dashboard.blade.php`:
+- [x] Buat migration: `businesses`, `categories`, `receipts`, `receipt_items`, `transactions`
+- [x] Buat model: `Business`, `Category`, `Transaction`, `Receipt`, `ReceiptItem`
+- [x] Buat factory + seeder untuk data demo
+- [x] Seeder kategori default (Bahan Baku, Operasional, Gaji, Transportasi, dll)
+- [x] Buat `DashboardController` dengan query summary
+- [x] Rebuild `dashboard.blade.php`:
   - Stat cards (total pemasukan, pengeluaran, saldo)
   - Chart.js bar chart arus kas
   - 5 transaksi terbaru
   - Quick action buttons
-- [ ] Buat `DashboardService` untuk aggregasi data
-- [ ] Auto-create business profile setelah register
+- [x] Buat `DashboardService` untuk aggregasi data
+- [x] Auto-create business profile setelah register
 
 ---
 
